@@ -42,15 +42,9 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
        router.put('/:candidateID',authMiddleware, async (req, res) => {
       try {
+         const candidateId = req.params.candidateID;
          const isAdmin = await checkAdminRole(req.user.id);
         if (!isAdmin) {
           return res.status(403).json({ message: 'Access denied. Admins only.' });
@@ -60,20 +54,20 @@ router.post('/', authMiddleware, async (req, res) => {
     
         // Check if the email already exists for another person
         const existingPerson = await Candidate.findOne({ email: updatedData.email, _id: { $ne: personId } });
-        if (existingPerson) {
-          return res.status(400).json({ message: 'Email already exists' });
+        if (!existingPerson) {
+          return res.status(400).json({ message: 'Email does not already exists' });
         }
     
         // If no other person exists with that email, update the person
-        const updatedPerson = await Candidate.findByIdAndUpdate(personId, updatedData, { new: true });
+        const updatedPerson = await Candidate.findByIdAndUpdate(candidateId);
         if (!updatedPerson) {
-          return res.status(404).json({ message: 'Person not found' });
+          return res.status(404).json({ message: 'Candidate not found' });
         }
-    
-        res.status(200).json({ message: 'Person updated successfully', data: updatedPerson });
+      
+        res.status(200).json({ message: 'Candidate updated successfully', data: updatedPerson });
       } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Error updating person', error: err.message });
+        res.status(500).json({ message: 'Error updating Candidate', error: err.message });
       }
     });
 
