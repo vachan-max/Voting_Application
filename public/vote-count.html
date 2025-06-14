@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vote Count</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f7;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 60%;
+      background-color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px 20px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #message {
+      margin-top: 20px;
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Vote Count Results</h2>
+
+  <table id="voteTable">
+    <thead>
+      <tr>
+        <th>Candidate Name</th>
+        <th>Vote Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Results will be injected here -->
+    </tbody>
+  </table>
+
+  <div id="message"></div>
+
+  <script>
+    async function loadVoteCounts() {
+      try {
+        const res = await fetch('http://localhost:3000/candidate/vote/count');
+
+        const data = await res.json();
+        const tableBody = document.querySelector("#voteTable tbody");
+        const messageDiv = document.getElementById("message");
+
+        if (!res.ok) {
+          messageDiv.textContent = data.message || "Failed to load vote data";
+          return;
+        }
+
+        data.voteRecord.forEach(candidate => {
+          const row = document.createElement("tr");
+
+          const nameCell = document.createElement("td");
+          nameCell.textContent = candidate.name;
+
+          const voteCell = document.createElement("td");
+          voteCell.textContent = candidate.voteCount;
+
+          row.appendChild(nameCell);
+          row.appendChild(voteCell);
+          tableBody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("message").textContent = "❌ Error fetching vote data.";
+      }
+    }
+
+    // Call the function on page load
+    loadVoteCounts();
+  </script>
+
+</body>
+</html>

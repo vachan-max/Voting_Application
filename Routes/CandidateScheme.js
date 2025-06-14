@@ -4,7 +4,7 @@ const Candidate = require('./../Models/Candidate.js');  // Import the Person mod
 const { authMiddleware,generateToken}= require('./../jwt.js'); // Import authentication middleware
 const User = require('./../Models/user.js');
 
-
+// ----function------------------------------
 const checkAdminRole = async (userID) => {
   try {
     const user = await User.findById(userID);
@@ -14,35 +14,47 @@ const checkAdminRole = async (userID) => {
     return false;
   }
 };
+const checkOnlyAdmin = async (userId) => {
+  const adminCount = await User.countDocuments({ role: 'admin' });
+  const user = await User.findById(userId);
+  return user?.role === 'admin' && adminCount === 1;
+};
 
 
+// -------------------------------------------------------------------------------------------------------------------------------
 // POST route to add a candidate
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    if (!req.user?.id) {
+    const userId = req.user?.id;
+
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized: No user ID in token' });
     }
 
-    if (!(await checkAdminRole(req.user.id))) {
+    const isAdmin = await checkAdminRole(userId);
+    if (!isAdmin) {
       return res.status(403).json({ message: 'User does not have admin role' });
+    }
+
+    const isOnlyAdmin = await checkOnlyAdmin(userId);
+    if (!isOnlyAdmin) {
+      return res.status(403).json({ message: 'Access denied: Only the one admin can add candidates' });
     }
 
     const data = req.body;
 
-    // Optionally validate data here
-
-    const newCandidate =  new Candidate(data);
+    const newCandidate = new Candidate(data);
     const response = await newCandidate.save();
 
     console.log('data saved');
     res.status(200).json({ response });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error while adding candidate:', err.message);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
-
-       router.put('/:candidateID',authMiddleware, async (req, res) => {
+// ---------------------------------------------------------------------------------------------------------------------------
+       router.put('/:candidateID', async (req, res) => {
       try {
          const candidateId = req.params.candidateID;
          const isAdmin = await checkAdminRole(req.user.id);
@@ -71,6 +83,8 @@ router.post('/', authMiddleware, async (req, res) => {
       }
     });
 
+
+// -----------------------------------------------------------------------------------------------
        router.delete('/:candidateID',authMiddleware, async (req, res) => {
       try {
          const isAdmin = await checkAdminRole(req.user.id);
@@ -94,6 +108,19 @@ router.post('/', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Error Deleting Candidate', error: err.message });
       }
     });
+// ------------------------------------------------
+router.get('/candidates', authMiddleware, async (req, res) => {
+  try {
+    
+    const candidates = await Candidate.find();
+    res.status(200).json(candidates);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch candidates' });
+  }
+});
+
+
+// -----------------------------------------------------------------------------
     router.post('/vote/:candidateID', authMiddleware, async (req, res) => {
       try {
         const candidateId = req.params.candidateID;
@@ -129,7 +156,7 @@ router.post('/', authMiddleware, async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Error casting vote', error: err.message });
       }});
-  
+  // ---------------------------------
       router.get('/vote/count',async (req, res) => {
       try {
         const candidates = await Candidate.find().sort({voteCount:'desc'});
@@ -142,4 +169,5 @@ router.post('/', authMiddleware, async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Error retrieving vote counts', error: err.message });
       }});
+      
 module.exports= router;

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Auth Frontend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input, select {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    label {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #tokenDisplay {
+      margin-top: 20px;
+      color: green;
+      font-weight: bold;
+    }
+
+    .form-section {
+      background-color: white;
+      padding: 20px 30px;
+      margin: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-section">
+    <h1>Signup</h1>
+    <input id="name" type="text" placeholder="Full Name" required />
+    <input id="age" type="number" placeholder="Age" required />
+    <input id="email" type="text" placeholder="Email (optional)" />
+    <input id="address" type="text" placeholder="Address" required />
+    <input id="aadhar" type="text" placeholder="Aadhar Card No" required />
+    <input id="password" type="password" placeholder="Password" required />
+    <select id="role">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <label>
+      <input type="checkbox" id="isVoted" />
+      Has Voted
+    </label>
+    <button onclick="signup()">Signup</button>
+  </div>
+
+  <div class="form-section">
+    <h1>Login</h1>
+    <input id="loginAadhar" type="text" placeholder="Aadhar Card No" />
+    <input id="loginPassword" type="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <h2 id="tokenDisplay"></h2>
+
+  <script>
+    const baseUrl = 'http://localhost:3000/user';
+
+async function signup() {
+  const res = await fetch(`${baseUrl}/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('name').value,
+      age: parseInt(document.getElementById('age').value),
+      email: document.getElementById('email').value,
+      address: document.getElementById('address').value,
+      aadharCardNo: document.getElementById('aadhar').value,
+      password: document.getElementById('password').value,
+      role: document.getElementById('role').value,
+      isVoted: document.getElementById('isVoted').checked
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  if (res.ok && data.token) {
+    localStorage.setItem('token', data.token);
+    window.location.href = '/profile.html'; // redirect to profile page
+  }
+}
+
+async function login() {
+  const res = await fetch(`${baseUrl}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      aadharCardNo: document.getElementById('loginAadhar').value,
+      password: document.getElementById('loginPassword').value
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  if (res.ok && data.token) {
+    localStorage.setItem('token', data.token);
+    window.location.href = '/profile.html'; // redirect to profile page
+  }
+}
+
+  </script>
+</body>
+</html>

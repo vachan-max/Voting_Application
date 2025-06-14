@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile Page</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f2f4f8;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #profileDisplay {
+      margin-top: 30px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 25px 30px;
+      width: 360px;
+      text-align: left;
+    }
+
+    #profileDisplay h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    #profileDisplay p {
+      margin: 8px 0;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to Your Dashboard!</h1>
+
+  <div class="button-group">
+    <button onclick="viewCandidates()">view Candidates</button>
+    <button onclick="viewVoteCounts()">View Vote Counts</button>
+    <button onclick="loadProfile()">View Profile</button>
+    <button onclick="changePassword()">Change Password</button>
+  </div>
+
+  <div id="profileDisplay"></div>
+
+  <script>
+    const baseUrl = 'http://localhost:3000/user';
+    const token = localStorage.getItem('token');
+
+   function loadProfile() {
+  fetch(`${baseUrl}/profile`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(response => {
+    const data = response.data; // ✅ access nested 'data'
+
+    document.getElementById('profileDisplay').innerHTML = `
+      <h3>Your Profile</h3>
+      <p><strong>Name:</strong> ${data.name || 'N/A'}</p>
+      <p><strong>Age:</strong> ${data.age || 'N/A'}</p>
+      <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+      <p><strong>Address:</strong> ${data.address || 'N/A'}</p>
+      <p><strong>Aadhar:</strong> ${data.aadharCardNo || 'N/A'}</p>
+    `;
+  })
+  .catch(err => {
+    alert("Failed to load profile");
+    console.error(err);
+  });
+}
+
+
+    function viewCandidates() {
+      window.location.href = '/candidates.html';
+    }
+
+    function viewVoteCounts() {
+      window.location.href = '/vote-count.html';
+    }
+
+    function changePassword() {
+      window.location.href = '/change-password.html';
+    }
+  </script>
+</body>
+</html>

@@ -18,12 +18,14 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-const generateToken = (savedUser) => {
-  return jwt.sign({ id: savedUser._id, role: savedUser.role }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
-  });
-};
 
+
+const generateToken = (savedUser) => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined");
+    }
+    return jwt.sign(savedUser, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
 
 
 module.exports = {authMiddleware, generateToken };

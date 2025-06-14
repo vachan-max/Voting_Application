@@ -24,12 +24,14 @@ router.get('/', async (req, res) => {
         
     
         // If no person exists with that email, create the new person
-        const newuser = await new User(data);
+        const newuser =  new User(data);
         const savedUser = await newuser.save();
-        
-     const token = generateToken(savedUser); // ✅ pass full user object
-
   
+            const payload = {
+            id: savedUser.id
+        }
+   
+        const token = generateToken(payload);
 
 
         res.status(201).json({ message: 'user created successfully', data: savedUser ,token:token});
@@ -38,43 +40,42 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Error creating user', error: err.message });
       }
     });
-   router.post('/login', async (req, res) => {
+ router.post('/login', async (req, res) => { 
   try {
     const { aadharCardNo, password } = req.body;
 
-    // 1. Find user
-    const adharCard = await User.findOne({ aadharCardNo: aadharCardNo });
-
-    // 2. If user not found or password doesn't match
-    if (!adharCard || !(await adharCard.comparePassword(password))) {
-      return res.status(400).json({ message: "Invalid username or password" });
+    // ✅ Input validation
+    if (!aadharCardNo || !password) {
+      return res.status(400).json({ message: "Aadhar Card Number and password are required" });
     }
 
-    // 3. Prepare payload
-    const payload = {
-      id: adharCard.id,
-    };
+    // 🔍 Find user by Aadhar
+    const user = await User.findOne({ aadharCardNo });
+    
+    // ❌ Invalid credentials
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid Aadhar Card Number or password" });
+    }
+      const payload = {
+            id: user.id,
+        }
+        const token = generateToken(payload); // Ensure generateToken is implemented
 
-    // 4. Generate JWT token
-    const token = generateToken(payload);
-
-    // 5. Respond with token
-    res.status(200).json({ message: "Login successful", token });
+    // ✅ Success
+    return res.status(200).json({ message: "Login successful", token });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Login error", error: err.message });
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Login error", error: err.message });
   }
 });
-router.get('/profile', authMiddleware, async (req, res) => {
+
+
+router.get('/profile',authMiddleware, async (req, res) => {
   try {
+    
     const userId = req.user.id; // ✅ Extract the ID from decoded token payload
     const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     res.status(200).json({ message: 'Profile fetched successfully', data: user });
   
   } catch (err) {

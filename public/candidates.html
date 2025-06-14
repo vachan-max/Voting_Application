@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vote for Candidates</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .candidate { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    button { padding: 6px 12px; margin-top: 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:disabled { background-color: #999; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h1>Vote for Your Candidate</h1>
+  <div id="candidateList">Loading candidates...</div>
+
+  <script>
+    const token = localStorage.getItem("token"); // assumes token is stored after login
+
+    async function fetchCandidates() {
+      try {
+        const res = await fetch('/Candidate/candidates', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to fetch candidates');
+        }
+
+        displayCandidates(data); // assuming backend returns array directly
+      } catch (err) {
+        document.getElementById('candidateList').textContent = 'Failed to load candidates.';
+        console.error(err);
+      }
+    }
+
+    function displayCandidates(candidates) {
+      const container = document.getElementById('candidateList');
+      container.innerHTML = '';
+      candidates.forEach(candidate => {
+        const div = document.createElement('div');
+        div.className = 'candidate';
+        div.innerHTML = `
+          <strong>Name:</strong> ${candidate.name}<br/>
+          <strong>Party:</strong> ${candidate.party || 'Independent'}<br/>
+          <strong>Votes:</strong> ${candidate.voteCount}<br/>
+          <button onclick="voteForCandidate('${candidate._id}', this)">Vote</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function voteForCandidate(candidateId, button) {
+      if (!token) {
+        alert("You must be logged in to vote.");
+        return;
+      }
+
+      try {
+        button.disabled = true;
+        const res = await fetch(`/Candidate/vote/${candidateId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert("Vote cast successfully!");
+          button.textContent = "Voted";
+        } else {
+          alert(result.message || "Error casting vote");
+          button.disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error casting vote");
+        button.disabled = false;
+      }
+    }
+
+    fetchCandidates();
+  </script>
+</body>
+</html>

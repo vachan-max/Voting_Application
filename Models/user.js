@@ -25,10 +25,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  addharCardNumber:{
-    type: String,
-    required: true,
-  },
+aadharCardNo: {
+  type: String,
+  required: true,
+},
   role:{
     type: String,
     enum: ['user','admin'],
@@ -40,17 +40,17 @@ const userSchema = new mongoose.Schema({
   },
 });
 userSchema.pre('save', async function (next) {
-  const person = this;
+  const user = this;
 
   // Only hash the password if it's new or modified
-  if (!person.isModified('password')) {
+  if (!user.isModified('password')) {
     return next();
   }
 
   try {
     const salt = await bcrypt.genSalt(10);
-    const hashed = await bcrypt.hash(person.password, salt);
-    person.password = hashed;
+    const hashed = await bcrypt.hash(user.password, salt);
+    user.password = hashed;
     next();
   } catch (err) {
     console.error("Error hashing password:", err);
