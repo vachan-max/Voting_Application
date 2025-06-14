@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
-require('dotenv').config(); // Load environment variables from .env file
+// Load environment variables from .env file
 
 
 const userSchema = new mongoose.Schema({
