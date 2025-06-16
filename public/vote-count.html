@@ -66,7 +66,7 @@
   <script>
     async function loadVoteCounts() {
       try {
-        const res = await fetch('http://localhost:3000/candidate/vote/count');
+        const res = await fetch('https://voting-application-rpl5.onrender.com/candidate/vote/count');
 
         const data = await res.json();
         const tableBody = document.querySelector("#voteTable tbody");
