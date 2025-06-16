@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-require('dotenv').config({ path: './.env1' });
+require('dotenv').config();
 const mongoose = require('mongoose');
 require('./db.js');
 const {authMiddleware}=require('./jwt.js'); // Import authentication middleware
