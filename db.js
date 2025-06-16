@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: './.env1' });
 
-const mongooseurl = process.env.DB_URL // Replace with your MongoDB URI
+const mongooseurl = process.env.local // Replace with your MongoDB URI
 
 // Remove useNewUrlParser and useUnifiedTopology options
 mongoose.connect(mongooseurl);
